@@ -1,14 +1,14 @@
 package net.demilich.metastone.game.cards;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CardCollection implements Iterable<Card>, Cloneable {
+
+	private static final Logger logger = LoggerFactory.getLogger(CardCollection.class);
 
 	private List<Card> cards = new ArrayList<Card>();
 
@@ -56,6 +56,20 @@ public class CardCollection implements Iterable<Card>, Cloneable {
 		return false;
 	}
 
+	/**-------------------------------------------------*/
+
+	public boolean equals(CardCollection cardCollection){
+		if (this.cards.size() != cardCollection.cards.size())
+			return false;
+		for(Card card: this.cards)
+			if (!cardCollection.containsCard(card))
+				return false;
+
+		return true;
+	}
+
+	/**-------------------------------------------------*/
+
 	public Card get(int index) {
 		return cards.get(index);
 	}
@@ -63,6 +77,40 @@ public class CardCollection implements Iterable<Card>, Cloneable {
 	public int getCount() {
 		return cards.size();
 	}
+
+	/**-------------------------------------------------*/
+
+	public Card getManaBasedRandom() {
+		if (cards.isEmpty()) {
+			return null;
+		}
+
+		Card manaBasedRandomCard = null;
+		Map<Double, Card> cardProbability = new HashMap<>();
+		double totalManaCost = 0;
+		double cumulativeProbability = 0;
+		for (Card card: cards){
+			totalManaCost += 11-card.getBaseManaCost();
+		}
+		for(Card card: cards){
+			double probability = (11-card.getBaseManaCost())/totalManaCost;
+			cumulativeProbability += probability;
+			//logger.info("card: {}, mana: {}, probability: {}, cumulProb: {}", card, card.getBaseManaCost(), probability, cumulativeProbability);
+			cardProbability.put(cumulativeProbability, card);
+		}
+
+		double random = Math.random();
+		for(Map.Entry<Double, Card> cardProb: cardProbability.entrySet()){
+			if(random < cardProb.getKey()) {
+				manaBasedRandomCard = cardProb.getValue();
+				break;
+			}
+		}
+
+		return manaBasedRandomCard;
+	}
+
+	/**-------------------------------------------------*/
 
 	public Card getRandom() {
 		if (cards.isEmpty()) {

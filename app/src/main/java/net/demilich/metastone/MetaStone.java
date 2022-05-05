@@ -63,7 +63,7 @@ public class MetaStone extends Application {
 		
 		// setting opacity to one for JavaFX hotfix
 		primaryStage.setOpacity(1.0);
-		
+
 		facade.sendNotification(GameNotification.CHECK_FOR_UPDATE);
 	}
 

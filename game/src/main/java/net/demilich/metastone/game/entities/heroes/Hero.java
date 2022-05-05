@@ -40,6 +40,23 @@ public class Hero extends Actor {
 		return clone;
 	}
 
+	/**-------------------------------------------------*/
+
+	public boolean equals(Hero hero){
+		if (this.getArmor() != hero.getArmor())
+			return false;
+		if (this.getAttack() != hero.getAttack() || this.getBaseAttack() != hero.getBaseAttack())
+			return false;
+		if (this.canAttackThisTurn() != hero.canAttackThisTurn())
+			return false;
+		if (this.getHp() != hero.getHp() || this.getEffectiveHp() != hero.getEffectiveHp())
+			return false;
+
+		return true;
+	}
+
+	/**-------------------------------------------------*/
+
 	public int getArmor() {
 		return getAttributeValue(Attribute.ARMOR);
 	}

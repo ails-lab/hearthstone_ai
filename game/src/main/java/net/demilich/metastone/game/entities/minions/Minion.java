@@ -18,6 +18,24 @@ public class Minion extends Summon {
 		return clone;
 	}
 
+	/**-------------------------------------------------*/
+	@Override
+	public boolean equals(Object o){
+		if (o.getClass() != Minion.class)
+			return false;
+		Minion minion = (Minion) o;
+		if(this.getId() != minion.getId())
+			return false;
+		if (this.getAttack() != minion.getAttack())
+			return false;
+		if (this.getHp() != minion.getHp() || this.getMaxHp() != minion.getMaxHp())
+			return false;
+
+		return true;
+	}
+
+	/**-------------------------------------------------*/
+
 	@Override
 	public int getAttack() {
 		if (hasAttribute(Attribute.ATTACK_EQUALS_HP)) {

@@ -1,10 +1,8 @@
 package net.demilich.metastone.game;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
+import net.demilich.metastone.game.collect.data.CsvHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +50,8 @@ public class GameContext implements Cloneable, IDisposable {
 	private boolean ignoreEvents;
 
 	private CardCollection tempCards = new CardCollection();
+
+	private Map<GameAction, Integer> gameActions = new LinkedHashMap<>();
 
 	public GameContext(Player player1, Player player2, GameLogic logic, DeckFormat deckFormat) {
 		this.getPlayers()[PLAYER_1] = player1;
@@ -154,6 +154,24 @@ public class GameContext implements Cloneable, IDisposable {
 		onGameStateChanged();
 		turnState = TurnState.TURN_ENDED;
 	}
+
+	/**-------------------------------------------------*/
+
+	@Override
+	public boolean equals(Object o){
+		if (o.getClass() != GameContext.class)
+			return false;
+		GameContext state = (GameContext) o;
+		if (this.turn != state.turn || this.turnState != state.turnState)
+			return false;
+		for (int i=0; i<2; i++)
+			if (!this.players[i].equals(state.getPlayers()[i]))
+				return false;
+
+		return true;
+	}
+
+	/**-------------------------------------------------*/
 
 	private Card findCardinCollection(CardCollection cardCollection, int cardId) {
 		for (Card card : cardCollection) {
@@ -270,6 +288,8 @@ public class GameContext implements Cloneable, IDisposable {
 		}
 		return (Stack<EntityReference>) environment.get(Environment.EVENT_TARGET_REFERENCE_STACK);
 	}
+
+	public Map<GameAction, Integer> getGameActions() { return gameActions; }
 
 	public List<Summon> getLeftSummons(Player player, EntityReference minionReference) {
 		List<Summon> leftSummons = new ArrayList<>();
@@ -453,6 +473,13 @@ public class GameContext implements Cloneable, IDisposable {
 				break;
 			}
 		}
+		//------------------------------------------------------
+		//save labels (winners) to csv file
+		CsvHandler writer = new CsvHandler();
+		writer.setCurrentPath("collect/data/");
+		winner = logic.getWinner(getActivePlayer(), getOpponent(getActivePlayer()));
+		writer.storeLabelsToCsv("activePlayers.csv", "labels.csv", winner.getId());
+		//-----------------------------------------------------
 		endGame();
 
 	}
@@ -470,9 +497,40 @@ public class GameContext implements Cloneable, IDisposable {
 
 	}
 
+	public void playFromStateAction(int playerId){
+		//Play the whole game starting from any turn, given the first action taken
+		while (playTurn()) {}
+		while (!gameDecided()) {
+			startTurn(getActivePlayer().getId());
+			while (playTurn()) {}
+			if (getTurn() > GameLogic.TURN_LIMIT) {
+				break;
+			}
+		}
+		endGame();
+	}
+
+	public void playFromStateAction(int playerId, int maxTurns){
+		//Play the whole game starting from any turn, given the first action taken
+		while (playTurn()) {}
+
+		while (getTurn() < maxTurns && !gameDecided()) {
+			startTurn(getActivePlayer().getId());
+			if(getTurn() == maxTurns)
+				break;
+
+			while (playTurn()) {}
+			if (getTurn() > GameLogic.TURN_LIMIT) {
+				break;
+			}
+		}
+		if (gameDecided())
+			endGame();
+	}
+
 	public boolean playTurn() {
 		if (++actionsThisTurn > 99) {
-			logger.warn("Turn has been forcefully ended after {} actions", actionsThisTurn);
+			logger.debug("Turn has been forcefully ended after {} actions", actionsThisTurn);
 			endTurn();
 			return false;
 		}
@@ -483,7 +541,6 @@ public class GameContext implements Cloneable, IDisposable {
 
 		List<GameAction> validActions = getValidActions();
 		if (validActions.size() == 0) {
-			//endTurn();
 			return false;
 		}
 
@@ -496,7 +553,6 @@ public class GameContext implements Cloneable, IDisposable {
 					+ getValidActions().size() + " actions were available");
 		}
 		performAction(activePlayer, nextAction);
-
 		return nextAction.getActionType() != ActionType.END_TURN;
 	}
 
@@ -567,7 +623,7 @@ public class GameContext implements Cloneable, IDisposable {
 		}
 	}
 
-	protected void startTurn(int playerId) {
+	public void startTurn(int playerId) {
 		turn++;
 		logic.startTurn(playerId);
 		onGameStateChanged();

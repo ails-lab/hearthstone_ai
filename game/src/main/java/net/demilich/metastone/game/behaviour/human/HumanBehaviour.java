@@ -6,12 +6,15 @@ import java.util.List;
 import net.demilich.metastone.BuildConfig;
 import net.demilich.metastone.GameNotification;
 import net.demilich.metastone.NotificationProxy;
+import net.demilich.metastone.game.Attribute;
 import net.demilich.metastone.game.GameContext;
 import net.demilich.metastone.game.Player;
 import net.demilich.metastone.game.actions.GameAction;
 import net.demilich.metastone.game.actions.IActionSelectionListener;
 import net.demilich.metastone.game.behaviour.Behaviour;
 import net.demilich.metastone.game.cards.Card;
+import net.demilich.metastone.game.cards.SpellCard;
+import net.demilich.metastone.game.entities.minions.Minion;
 
 public class HumanBehaviour extends Behaviour implements IActionSelectionListener {
 
@@ -61,6 +64,7 @@ public class HumanBehaviour extends Behaviour implements IActionSelectionListene
 			} catch (InterruptedException e) {
 			}
 		}
+
 		return selectedAction;
 	}
 
@@ -68,5 +72,4 @@ public class HumanBehaviour extends Behaviour implements IActionSelectionListene
 		this.mulliganCards = mulliganCards;
 		waitingForInput = false;
 	}
-
 }

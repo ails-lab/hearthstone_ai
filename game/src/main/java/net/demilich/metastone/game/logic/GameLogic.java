@@ -160,7 +160,8 @@ public class GameLogic implements Cloneable {
 
 		player.modifyAttribute(Attribute.COMBO, +1);
 		Card card = context.resolveCardReference(cardReference);
-		
+		if(card == null)
+			logger.info("mpleksame-------------------");
 		card.removeAttribute(Attribute.MANA_COST_MODIFIER);
 	}
 
@@ -946,6 +947,42 @@ public class GameLogic implements Cloneable {
 		}
 		return quests;
 	}
+
+	/**-------------------------------------------------*/
+
+	public void getRandomHand(Player player, boolean [] randomFunction){
+		int currentNumberOfCards = 0;
+		List<Card> randomHand = new ArrayList<>();
+		// remove player real cards from hand
+		for (Card card : player.getHand().toList()) {
+			if (card.getCardId() != null && !card.getCardId().equalsIgnoreCase("spell_the_coin")) {
+				currentNumberOfCards++;
+				// put the real hand cards back in the deck
+				player.getDeck().add(card);
+				player.getHand().remove(card);
+			}
+		}
+
+		// draw random cards from deck until required card count is
+		// reached
+		Card randomCard;
+		for(int i=0; i<currentNumberOfCards; i++) {
+			if (randomFunction[0])
+				randomCard = player.getDeck().getRandom();
+			else
+				randomCard = player.getDeck().getManaBasedRandom();
+			player.getDeck().remove(randomCard);
+			randomHand.add(randomCard);
+		}
+
+		for (Card card : randomHand) {
+			if (card != null) {
+				receiveCard(player.getId(), card);
+			}
+		}
+	}
+
+	/**-------------------------------------------------*/
 
 	public List<IGameEventListener> getSecrets(Player player) {
 		List<IGameEventListener> secrets = context.getTriggersAssociatedWith(player.getHero().getReference());

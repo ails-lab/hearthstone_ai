@@ -1,5 +1,47 @@
-# MetaStone #
+# Hearthstone AI in Metastone #
 
+## Hearthstone AI ##
+This project contains AI agents for Hearthstone, implemented in the MetaStone framework.
+The new implemented agents are:
+* MCTSxgb
+* MCTSPruningNets
+* MCTSxgbPruningNets
+
+The original MetaStone framework can be found [here](https://github.com/demilich1/metastone).
+
+### Agents ###
+All three provided agents are based on the **Monte Carlo Tree Search** algorithm. 
+
+* **MCTSxgb** makes use of a machine learning model for winner prediction given a game state during the rollout phase.
+
+* In **MCTSPruningNets**, neural networks are used for pruning the action space during the tree search.
+
+* **MCTSxgbPruningNets** combines both aforementioned approaches.
+
+These agents are based on the following papers:
+* Applying Gradient Boosting Trees and Stochastic Leaf Evaluation to MCTS on Hearthstone [[paper]](https://ieeexplore.ieee.org/abstract/document/9356305)
+* Pruning Stochastic Game Trees Using Neural Networks for Reduced Action Space Approximation [[paper]](https://www.mdpi.com/2227-7390/10/9/1509)
+
+### Prerequisites ###
+* Oracle JDK 1.8 [Installation guide for Ubuntu](https://docs.datastax.com/en/jdk-install/doc/jdk-install/installOracleJdkDeb.html)
+* Python3
+   * Preferably use a [virtualenv](https://gist.github.com/Geoyi/d9fab4f609e9f75941946be45000632b)
+   * xgboost version 1.0.2 (pip install xgboost==1.0.2)
+   * scikit-learn (pip install sklearn)
+   * TensorFlow 2.5.0 (pip install tensorflow==2.5.0)
+   * Keras (pip install keras)
+  
+### Common Configuration Errors ###
+- In case you get 'Unsupported Gradle' error in IntelliJ (because newer version of IntelliJ are incompatible with Gradle 2.9) go to File-> Settings-> Build, Execution, Deployment-> Build Tools-> Gradle and in 'Use Gradle from:' box select **'wrapper' task in Gradle build script**, apply and ok. You may need to close and reopen the project for the changes to be applied.
+- In case you get 'cannot resolve symbol' error in most classes go to File-> Invalidate caches and restart IDE.
+
+### How to run the agents ###
+All machine learning models used by the agents are implemented in Python. In order to communicate with the Metastone framework, a REST API has been implemented. Before starting a game navigate to the folder where you extracted the project and execute the following commands:
+
+* `python ./hearthstone_ai/game/src/main/java/net/demilich/metastone/game/behaviour/models/xgb_model.py (for the state evaluating model)`
+* `python ./hearthstone_ai/game/src/main/java/net/demilich/metastone/game/behaviour/models/pruning_nets.py (for the pruning networks)`
+
+## Metastone ##
 ### What is it? ###
 MetaStone is a simulator for the online collectible card game (CCG) Hearthstone&reg; by Activison Blizzard written in Java. It strives to be a useful tool for card value analyzation, deck building and performance evaluation. There is also support for custom cards, allowing users to implement their own card inventions and testing them within the simulator engine. MetaStone tries to re-implement all game mechanics and rules from the original game as accurately as possible. 
 
@@ -121,4 +163,3 @@ metastone
       * Right click on the individual test file and select `Run Test`
 * If you encounter test failures open the test report file `build/reports/tests/index.html` for details on the failures
 * Look [**here**](/game/src/test/java/net/demilich/metastone/tests) for list of existing game tests.
-

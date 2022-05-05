@@ -6,18 +6,26 @@ import java.util.List;
 
 import net.demilich.metastone.game.GameContext;
 import net.demilich.metastone.game.Player;
+import net.demilich.metastone.game.TurnState;
 import net.demilich.metastone.game.actions.GameAction;
 import net.demilich.metastone.game.behaviour.PlayRandomBehaviour;
+import net.demilich.metastone.game.logic.GameLogic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 class Node {
 
 	private GameContext state;
+	private final GameLogic logic = new GameLogic();
 	private List<GameAction> validTransitions;
 	private final List<Node> children = new LinkedList<>();
 	private final GameAction incomingAction;
 	private int visits;
 	private int score;
 	private final int player;
+
+	private static final Logger logger = LoggerFactory.getLogger(Node.class);
 
 	public Node(GameAction incomingAction, int player) {
 		this.incomingAction = incomingAction;
@@ -32,6 +40,10 @@ class Node {
 		GameAction action = validTransitions.remove(0);
 		GameContext newState = state.clone();
 
+		for (Player player : newState.getPlayers()) {
+			player.setBehaviour(new PlayRandomBehaviour());
+		}
+
 		try {
 			newState.getLogic().performGameAction(newState.getActivePlayer().getId(), action);
 		} catch (Exception e) {
@@ -41,18 +53,29 @@ class Node {
 		}
 
 		Node child = new Node(action, getPlayer());
+
+		/**-------------------------------------------------*/
+
+		if (newState.getTurnState() == TurnState.TURN_ENDED){
+			newState.startTurn(newState.getActivePlayer().getId());
+		}
+		/**--------------------------------------------------*/
 		child.initState(newState, newState.getValidActions());
+
 		children.add(child);
 		return child;
 	}
 
 	public GameAction getBestAction() {
 		GameAction best = null;
-		int bestScore = Integer.MIN_VALUE;
+		//int bestScore = Integer.MIN_VALUE;
+		int mostVisits = Integer.MIN_VALUE;
 		for (Node node : children) {
-			if (node.getScore() > bestScore) {
+			//if (node.getScore() > bestScore) {
+			if (node.getVisits() > mostVisits) {
 				best = node.incomingAction;
-				bestScore = node.getScore();
+				//bestScore = node.getScore();
+				mostVisits = node.getVisits();
 			}
 		}
 		return best;
@@ -61,6 +84,8 @@ class Node {
 	public List<Node> getChildren() {
 		return children;
 	}
+
+	public GameAction getIncomingAction() { return incomingAction; }
 
 	public int getPlayer() {
 		return player;
@@ -82,6 +107,22 @@ class Node {
 		this.state = state.clone();
 		this.validTransitions = new ArrayList<GameAction>(validActions);
 	}
+
+	/**-------------------------------------------------*/
+	public void rootInitState(GameContext state, List<GameAction> validActions) {
+		this.state = state.clone();
+		this.validTransitions = new ArrayList<GameAction>(validActions);
+
+		//Replace opponent's hand with a random one
+		this.logic.setContext(this.state);
+		for (Player pl : this.state.getPlayers()){
+			if (pl.getId()!= this.state.getActivePlayerId()) {
+				boolean[] randomFunction = {false, true};
+				this.logic.getRandomHand(pl, randomFunction);
+			}
+		}
+	}
+	/**-------------------------------------------------*/
 
 	public boolean isExpandable() {
 		if (validTransitions.isEmpty()) {
@@ -115,9 +156,9 @@ class Node {
 				visited.add(current);
 			}
 		}
-
 		int value = rollOut(current);
 		for (Node node : visited) {
+			//logger.info("Action: {}, playerId: {}", node.incomingAction, node.getPlayer());
 			node.updateStats(value);
 		}
 	}
@@ -132,8 +173,7 @@ class Node {
 		for (Player player : simulation.getPlayers()) {
 			player.setBehaviour(new PlayRandomBehaviour());
 		}
-
-		simulation.playTurn();
+		simulation.playFromStateAction(player);
 
 		return simulation.getWinningPlayerId() == getPlayer() ? 1 : 0;
 	}

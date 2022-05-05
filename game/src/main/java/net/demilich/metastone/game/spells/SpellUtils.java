@@ -10,6 +10,7 @@ import net.demilich.metastone.game.GameContext;
 import net.demilich.metastone.game.Player;
 import net.demilich.metastone.game.actions.DiscoverAction;
 import net.demilich.metastone.game.actions.GameAction;
+import net.demilich.metastone.game.behaviour.Behaviour;
 import net.demilich.metastone.game.cards.Card;
 import net.demilich.metastone.game.cards.CardCatalogue;
 import net.demilich.metastone.game.cards.CardCollection;
@@ -26,8 +27,12 @@ import net.demilich.metastone.game.spells.desc.SpellDesc;
 import net.demilich.metastone.game.spells.desc.filter.EntityFilter;
 import net.demilich.metastone.game.spells.desc.filter.Operation;
 import net.demilich.metastone.game.targeting.EntityReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class SpellUtils {
+	private final static Logger logger = LoggerFactory.getLogger(SpellUtils.class);
 
 	public static void castChildSpell(GameContext context, Player player, SpellDesc spell, Entity source, Entity target) {
 		EntityReference sourceReference = source != null ? source.getReference() : null;
@@ -110,6 +115,7 @@ public class SpellUtils {
 		if (context.getLogic().attributeExists(Attribute.ALL_RANDOM_YOGG_ONLY_FINAL_DESTINATION)) {
 			return (DiscoverAction) discoverActions.get(context.getLogic().random(discoverActions.size()));
 		} else {
+			//logger.info("Here you are, player: {}, behaviour: {}", player.getHero(), player.getBehaviour());
 			return (DiscoverAction) player.getBehaviour().requestAction(context, player, discoverActions);
 		}
 	}

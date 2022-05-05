@@ -117,7 +117,10 @@ public class SimulationModeConfigView extends BorderPane implements EventHandler
 		ObservableList<Integer> numberOfGamesEntries = FXCollections.observableArrayList();
 		numberOfGamesEntries.add(1);
 		numberOfGamesEntries.add(10);
+		numberOfGamesEntries.add(20);
+		numberOfGamesEntries.add(50);
 		numberOfGamesEntries.add(100);
+		numberOfGamesEntries.add(200);
 		numberOfGamesEntries.add(1000);
 		numberOfGamesEntries.add(10000);
 		numberOfGamesEntries.add(100000);

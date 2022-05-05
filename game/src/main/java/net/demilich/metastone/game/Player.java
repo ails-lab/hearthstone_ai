@@ -77,6 +77,33 @@ public class Player extends Entity {
 		return new Player(this);
 	}
 
+	/**-------------------------------------------------*/
+
+	public boolean equals(Player player){
+		if (this.mana != player.getMana())
+			return false;
+		if (this.maxMana != player.getMaxMana())
+			return false;
+		if (this.lockedMana != player.getLockedMana())
+			return false;
+		if (!this.hand.equals(player.getHand()))
+			return false;
+		if (!this.deck.equals(player.getDeck()))
+			return false;
+		if (!this.hero.equals(player.getHero()))
+			return false;
+
+		if (this.getMinions().size() != player.getMinions().size())
+			return false;
+		for(Minion minion: this.getMinions())
+			if (!player.getMinions().contains(minion))
+				return false;
+
+		return true;
+	}
+
+	/**-------------------------------------------------*/
+
 	public IBehaviour getBehaviour() {
 		return behaviour;
 	}

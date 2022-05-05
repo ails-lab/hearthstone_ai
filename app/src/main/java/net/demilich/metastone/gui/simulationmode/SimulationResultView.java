@@ -26,8 +26,12 @@ import net.demilich.metastone.game.cards.CardType;
 import net.demilich.metastone.game.logic.GameLogic;
 import net.demilich.metastone.game.statistics.GameStatistics;
 import net.demilich.metastone.game.statistics.Statistic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SimulationResultView extends BorderPane {
+
+	private final static Logger logger = LoggerFactory.getLogger(SimulationResultView.class);
 
 	private static String getStatName(Statistic stat) {
 		switch (stat) {
@@ -199,6 +203,12 @@ public class SimulationResultView extends BorderPane {
 		favouriteWeaponCard.setPlayer1Value(getFavouriteCardName(result.getPlayer1Stats(), CardType.WEAPON));
 		favouriteWeaponCard.setPlayer2Value(getFavouriteCardName(result.getPlayer2Stats(), CardType.WEAPON));
 		absoluteStatEntries.add(favouriteWeaponCard);
+
+		logger.info("Average Stats: ");
+		for (StatEntry entry: averageStatEntries){
+			logger.info("Stat: {}, P1 value: {}, P2 value: {}", entry.getStatName(), entry.getPlayer1Value(), entry.getPlayer2Value());
+		}
+
 
 		absoluteResultTable.setItems(absoluteStatEntries);
 

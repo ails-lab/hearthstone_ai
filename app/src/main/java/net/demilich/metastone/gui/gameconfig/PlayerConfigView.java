@@ -16,14 +16,13 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import net.demilich.metastone.game.behaviour.GreedyOptimizeMove;
-import net.demilich.metastone.game.behaviour.IBehaviour;
-import net.demilich.metastone.game.behaviour.NoAggressionBehaviour;
-import net.demilich.metastone.game.behaviour.PlayRandomBehaviour;
+import net.demilich.metastone.game.behaviour.*;
 import net.demilich.metastone.game.behaviour.heuristic.WeightedHeuristic;
 import net.demilich.metastone.game.behaviour.human.HumanBehaviour;
+import net.demilich.metastone.game.behaviour.mctspruningnets.MonteCarloTreeSearchPruningNets;
+import net.demilich.metastone.game.behaviour.mctsxgb.MonteCarloTreeSearchXGB;
+import net.demilich.metastone.game.behaviour.mctsxgbpruningnets.MonteCarloTreeSearchXGBPruningNets;
 import net.demilich.metastone.game.behaviour.threat.GameStateValueBehaviour;
-import net.demilich.metastone.game.behaviour.FlatMonteCarlo;
 import net.demilich.metastone.game.cards.Card;
 import net.demilich.metastone.game.cards.CardCatalogue;
 import net.demilich.metastone.game.cards.HeroCard;
@@ -171,6 +170,10 @@ public class PlayerConfigView extends VBox {
 		behaviourList.add(new GreedyOptimizeMove(new WeightedHeuristic()));
 		behaviourList.add(new NoAggressionBehaviour());
 		behaviourList.add(new FlatMonteCarlo(100));
+		behaviourList.add(new MonteCarloTreeSearchPruningNets(500, true, false));
+        behaviourList.add(new MonteCarloTreeSearchXGB(500, 5, true, true, true));
+		behaviourList.add(new MonteCarloTreeSearchXGBPruningNets(500, 5, true, true, true,
+				 true, false));
 
 		behaviourBox.setItems(behaviourList);
 		behaviourBox.valueProperty().addListener(this::onBehaviourChanged);
@@ -183,7 +186,6 @@ public class PlayerConfigView extends VBox {
 		}
 
 		heroList.add(new MetaHero());
-
 		heroBox.setItems(heroList);
 		heroBox.valueProperty().addListener((ChangeListener<HeroCard>) (observableValue, oldHero, newHero) -> {
 			selectHero(newHero);

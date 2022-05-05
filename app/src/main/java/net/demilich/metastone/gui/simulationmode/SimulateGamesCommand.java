@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import net.demilich.metastone.game.collect.data.CsvHandler;
+import net.demilich.metastone.game.statistics.Statistic;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +74,8 @@ public class SimulateGamesCommand extends SimpleCommand<GameNotification> {
 
 			@Override
 			public void run() {
-				int cores = Runtime.getRuntime().availableProcessors();
+				//int cores = Runtime.getRuntime().availableProcessors();
+				int cores = 1;
 				logger.info("Starting simulation on " + cores + " cores");
 				ExecutorService executor = Executors.newFixedThreadPool(cores);
 				// ExecutorService executor =
@@ -117,6 +120,8 @@ public class SimulateGamesCommand extends SimpleCommand<GameNotification> {
 				}
 
 				result.calculateMetaStatistics();
+				logger.info("Player1 win rate: " + result.getPlayer1Stats().get(Statistic.WIN_RATE).toString());
+				logger.info("Player2 win rate: " + result.getPlayer2Stats().get(Statistic.WIN_RATE).toString());
 				getFacade().sendNotification(GameNotification.SIMULATION_RESULT, result);
 				logger.info("Simulation finished");
 
@@ -124,6 +129,11 @@ public class SimulateGamesCommand extends SimpleCommand<GameNotification> {
 		});
 		t.setDaemon(true);
 		t.start();
+		try {
+			t.join();
+		}catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void onGameComplete(GameConfig gameConfig, GameContext context) {
@@ -138,7 +148,26 @@ public class SimulateGamesCommand extends SimpleCommand<GameNotification> {
 		synchronized (result) {
 			result.getPlayer1Stats().merge(context.getPlayer1().getStatistics());
 			result.getPlayer2Stats().merge(context.getPlayer2().getStatistics());
+
+			long player1Wins, player2Wins;
+			if(result.getPlayer1Stats().get(Statistic.GAMES_WON) == null)
+				player1Wins = 0;
+			else
+				player1Wins = ((long) result.getPlayer1Stats().get(Statistic.GAMES_WON));
+			if(result.getPlayer2Stats().get(Statistic.GAMES_WON) == null)
+				player2Wins = 0;
+			else
+				player2Wins = ((long) result.getPlayer2Stats().get(Statistic.GAMES_WON));
+
+			logger.info("Games completed: {}, {} {} - {} {},      Win rate: {},    Deck: {}", gamesCompleted,
+					gameConfig.getPlayerConfig1().getBehaviour().getName(),
+					player1Wins,
+					player2Wins,
+					gameConfig.getPlayerConfig2().getBehaviour().getName(),
+					(double)player1Wins/(player1Wins+player2Wins),
+					gameConfig.getPlayerConfig1().getDeck().getFilename());
 		}
+
 	}
 
 }

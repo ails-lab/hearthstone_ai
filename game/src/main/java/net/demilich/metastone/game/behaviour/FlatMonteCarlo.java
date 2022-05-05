@@ -27,12 +27,13 @@ public class FlatMonteCarlo extends Behaviour {
 		double bestScore = Integer.MIN_VALUE;
 		for (GameAction actionEntry : actionScores.keySet()) {
 			double score = actionScores.get(actionEntry);
+			//logger.info("action, score: {}, {}", actionEntry, score);
 			if (score > bestScore) {
 				bestAction = actionEntry;
 				bestScore = score;
 			}
 		}
-		logger.debug("Best action determined by MonteCarlo: " + bestAction.getActionType());
+		//logger.info("Best action determined by MonteCarlo: " + bestAction.getActionType());
 		return bestAction;
 	}
 
@@ -59,9 +60,10 @@ public class FlatMonteCarlo extends Behaviour {
 		simulation.playFromState();
 		return simulation.getWinningPlayerId() == playerId ? 1 : 0;
 	}
-
+	
 	@Override
 	public GameAction requestAction(GameContext context, Player player, List<GameAction> validActions) {
+		//logger.info("------------------------");
 		if (validActions.size() == 1) {
 			return validActions.get(0);
 		}
@@ -69,7 +71,7 @@ public class FlatMonteCarlo extends Behaviour {
 		for (GameAction gameAction : validActions) {
 			double score = simulate(context, player.getId(), gameAction);
 			actionScores.put(gameAction, score);
-			logger.debug("Action {} gets score of {}", gameAction.getActionType(), score);
+			//logger.info("Action {} gets score of {}", gameAction.getActionType(), score);
 
 		}
 		GameAction bestAction = getBestAction(actionScores);
@@ -79,6 +81,7 @@ public class FlatMonteCarlo extends Behaviour {
 	private double simulate(GameContext context, int playerId, GameAction action) {
 		GameContext simulation = context.clone();
 		simulation.getLogic().performGameAction(simulation.getActivePlayer().getId(), action);
+		//logger.info("check action {}", action.getActionType());
 		if (simulation.gameDecided()) {
 			return simulation.getWinningPlayerId() == playerId ? 1 : 0;
 		}
